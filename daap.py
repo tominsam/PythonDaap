@@ -120,6 +120,10 @@ dmapDataTypes = {
     12:'c', # container
         }
 
+dmapFudgeDataTypes = {
+  'dmap.authenticationschemes':'1'
+}
+
 def DAAPParseCodeTypes(treeroot):
     # the treeroot we are given should be a
     # dmap.contentcodesresponse
@@ -155,6 +159,10 @@ def DAAPParseCodeTypes(treeroot):
             if code == None or name == None or dtype == None:
                 print 'DEBUG: DAAPParseCodeTypes: missing information, not adding entry'
             else:
+                try:
+                    dtype = dmapFudgeDataTypes[name]
+                except: pass
+
                 dmapCodeTypes[code] = (name, dtype)
         else:
             raise DAAPError('DAAPParseCodeTypes: unexpected code %s at level 1' % info.codeName())
@@ -591,7 +599,7 @@ if __name__ == '__main__':
         session     = connection.login()
 
         library = session.library()
-        print("Library name is '%s'"%(library.name))
+        print "Library name is '%s'"%repr(library.name)
 
         tracks = library.tracks()
 

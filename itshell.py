@@ -49,7 +49,7 @@ class ItShell(Cmd):
             print "Need server and port"
             return
 
-        print "Connecting to %s:%s"%(server, port)
+        print "Connecting to %s:%s"%(repr(server), repr(port))
         client = DAAPClient()
         client.connect(server, port)
         self.session = client.login()
@@ -65,7 +65,7 @@ class ItShell(Cmd):
             return
         databases = self.session.databases()
         for d in databases:
-            print "%s: %s"%(d.id, d.name)
+            print "%s: %s"%(d.id, repr(d.name))
 
     def do_database(self, id):
         """
@@ -78,7 +78,7 @@ class ItShell(Cmd):
         for d in databases:
             if str(d.id) == str(id):
                 self.database = d
-                print "using database '%s'"%d.name
+                print "using database '%s'"%repr(d.name)
                 self.get_tracks(reset = 1)
                 print "Got %s tracks"%len(self._tracks)
                 return
@@ -95,7 +95,7 @@ class ItShell(Cmd):
         playlists = self.database.playlists()
         print "%s playlists in the selected database."%len(playlists)
         for p in playlists:
-            print "%s: %s"%(p.id, p.name)
+            print "%s: %s"%(p.id, repr(p.name))
 
     def do_playlist(self, id):
         """
@@ -111,7 +111,7 @@ class ItShell(Cmd):
         for p in playlists:
             if str(p.id) == str(id):
                 self.database = p
-                print "using playlist '%s'"%p.name
+                print "using playlist '%s'"%repr(p.name)
                 self._tracks = p.tracks()
                 print "Got %s tracks"%len(self._tracks)
                 return
@@ -133,7 +133,7 @@ class ItShell(Cmd):
         print "%s tracks in the selected database."%len(tracks)
         if len(tracks) > 50: print "displaying 1-50"
         for t in tracks[:50]:
-            print "%s: %s - %s - %s"%(t.id, t.artist, t.album, t.name)
+            print "%s: %s - %s - %s"%(t.id, repr(t.artist), repr(t.album), repr(t.name))
 
     def do_search(self, other):
         """search <term> - list all tracks matching the given term"""
@@ -151,7 +151,7 @@ class ItShell(Cmd):
         print "%s tracks found."%len(found)
         if len(found) > 50: print "displaying 1-50"
         for t in found[:50]:
-            print "%s: %s - %s - %s"%(t.id, t.artist, t.album, t.name)
+            print "%s: %s - %s - %s"%(t.id, repr(t.artist), repr(t.album), repr(t.name))
         
     
     def do_download(self, spec):
@@ -176,7 +176,7 @@ class ItShell(Cmd):
         for t in tracks:
             if str(t.id) == id:
                 if filename == None:
-                    filename = "%s - %s.%s"%(t.artist, t.name, t.type)
+                    filename = "%s - %s.%s"%(repr(t.artist), repr(t.name), t.type)
                 t.save( filename )
                 return
         print "No such track"
@@ -187,3 +187,4 @@ class ItShell(Cmd):
 shell = ItShell()
 #shell.do_connect("")
 shell.cmdloop()
+ 
