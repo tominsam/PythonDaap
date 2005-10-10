@@ -333,9 +333,13 @@ class DAAPObject:
         elif type == 's':
             # the object is a string
             # we need to read length characters from the string
-            self.value  = unicode(
-                struct.unpack('!%ss' % self.length, code)[0],
-            'utf-8')
+            try:
+                self.value  = unicode(
+                    struct.unpack('!%ss' % self.length, code)[0], 'utf-8')
+            except UnicodeDecodeError:
+                # oh, urgh
+                self.value = unicode(
+                    struct.unpack('!%ss' % self.length, code)[0], 'latin-1')
         else:
             # we don't know what to do with this object
             # put it's raw data into value
