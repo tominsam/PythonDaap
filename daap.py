@@ -571,7 +571,7 @@ class DAAPTrack:
     def save(self, filename):
         """saves the file to 'filename' on the local machine"""
         print "saving to '%s'"%filename
-        mp3 = open(filename, "w")
+        mp3 = open(filename, "wb")
         r = self.request()
         # doing this all on one lump seems to explode a lot. TODO - what
         # is a good block size here?
