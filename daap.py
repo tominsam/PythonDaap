@@ -11,6 +11,9 @@
 import httplib, struct, sys
 import md5, md5daap
 import gzip
+import logging
+
+log = logging.getLogger('daap')
 
 # cStringIO is faster, but not subclassable
 #from StringIO import StringIO
@@ -103,8 +106,7 @@ dmapCodeTypes = {
     'mcnm':('dmap.contentcodesnumber', 's'),
     'mcna':('dmap.contentcodesname', 's'),
     'mcty':('dmap.contentcodestype', 'uh'),
-}
-
+        }
 dmapDataTypes = {
     # these are the data types
     1:'b',  # byte
@@ -153,12 +155,12 @@ def DAAPParseCodeTypes(treeroot):
                     try:
                         dtype   = dmapDataTypes[info.value]
                     except:
-                        print 'DEBUG: DAAPParseCodeTypes: unknown data type %s for code %s, defaulting to s' % (info.value, name)
+                        log.debug('DAAPParseCodeTypes: unknown data type %s for code %s, defaulting to s', info.value, name)
                         dtype   = 's'
                 else:
                     raise DAAPError('DAAPParseCodeTypes: unexpected code %s at level 2' % info.codeName())
             if code == None or name == None or dtype == None:
-                print 'DEBUG: DAAPParseCodeTypes: missing information, not adding entry'
+                log.debug('DAAPParseCodeTypes: missing information, not adding entry')
             else:
                 try:
                     dtype = dmapFudgeDataTypes[name]
@@ -170,7 +172,7 @@ def DAAPParseCodeTypes(treeroot):
 
 class DAAPError(Exception): pass
 
-class DAAPObject:
+class DAAPObject(object):
     def __init__(self):
         self.code   = None
         self.length = None
@@ -203,8 +205,8 @@ class DAAPObject:
         else:
             return dmapCodeTypes[self.code][1]
 
-    def printTree(self, level = 0):
-        print '\t' * level, '%s (%s)\t%s\t%s' % (self.codeName(), self.code, self.objectType(), str(self.value))
+    def printTree(self, level = 0, out = sys.stdout):
+        out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.objectType(), str(self.value)))
         for object in self.contains:
             object.printTree(level + 1)
 
@@ -344,11 +346,11 @@ class DAAPObject:
         else:
             # we don't know what to do with this object
             # put it's raw data into value
-            print 'DEBUG: DAAPObject: Unknown code %s for type %s, writing raw data'%(code, self.code)
+            log.debug('DAAPObject: Unknown code %s for type %s, writing raw data', code, self.code)
             self.value  = code
 
 
-class DAAPClient:
+class DAAPClient(object):
     def __init__(self):
         self.socket = None
         self.request_id = 0
@@ -375,7 +377,7 @@ class DAAPClient:
             first = 0
             r += "%s=%s"%(key, params[key])
 
-        print("DEBUG: getting %s"%r)
+        log.debug('getting %s', r)
 
         headers = {
             'Client-DAAP-Version': '3.0',
@@ -410,18 +412,15 @@ class DAAPClient:
         content = response.read()
         # if we got gzipped data base, gunzip it.
         if response.getheader("Content-Encoding") == "gzip":
-            print "DEBUG: gunzipping data"
+            log.debug("gunzipping data")
             old_len = len(content)
             compressedstream = StringIO( content )
             gunzipper = gzip.GzipFile(fileobj=compressedstream)
             content = gunzipper.read()
-            gunzipper.close()
-            compressedstream.close()
-            print "DEBUG: expanded from %s bytes to %s bytes"%(old_len, len(content))
+            log.debug("expanded from %s bytes to %s bytes"%(old_len, len(content)) )
         # close this, we're done with it
         response.close()
         
-        #print "DEBUG: DAAPClient: response status is %s"%response.status
         if status == 401:
             raise DAAPError('DAAPClient: %s: auth required'%r)
         elif status == 403:
@@ -441,7 +440,6 @@ class DAAPClient:
         str = StringIO(data)
         object  = DAAPObject()
         object.processData(str)
-        str.close()
         return object
 
 
@@ -466,13 +464,13 @@ class DAAPClient:
         response = self.request("/login")
         sessionid   = response.getAtom("mlid")
         if sessionid == None:
-            print 'DEBUG: DAAPClient: login unable to determine session ID'
+            log.debug('DAAPClient: login unable to determine session ID')
             return
-        print "DEBUG: Logged in as session %s"%sessionid
+        log.debug("DEBUG: Logged in as session %s", sessionid)
         return DAAPSession(self, sessionid)
 
 
-class DAAPSession:
+class DAAPSession(object):
 
     def __init__(self, connection, sessionid):
         self.connection = connection
@@ -500,13 +498,9 @@ class DAAPSession:
 
     def logout(self):
         response = self.request("/logout")
-        print 'DEBUG: DAAPSession: expired session id %s' % self.sessionid
+        log.debug('DEBUG: DAAPSession: expired session id %s', self.sessionid)
         
-    def __del__(self):
-        print "DEBUG: destroying session"
-        self.logout()
-
-class DAAPDatabase:
+class DAAPDatabase(object):
 
     def __init__(self, session, atom):
         self.session = session
@@ -528,7 +522,7 @@ class DAAPDatabase:
         return map( lambda d: DAAPPlaylist(self, d), db_list )
 
 
-class DAAPPlaylist:
+class DAAPPlaylist(object):
 
     def __init__(self, database, atom):
         self.database = database
@@ -546,7 +540,7 @@ class DAAPPlaylist:
         return map( lambda t: DAAPTrack(self.database, t), track_list )
 
 
-class DAAPTrack:
+class DAAPTrack(object):
 
     def __init__(self, database, atom):
         self.database = database
@@ -574,7 +568,7 @@ class DAAPTrack:
 
     def save(self, filename):
         """saves the file to 'filename' on the local machine"""
-        print "saving to '%s'"%filename
+        log.debug("saving to '%s'", filename)
         mp3 = open(filename, "wb")
         r = self.request()
         # doing this all on one lump seems to explode a lot. TODO - what
@@ -585,7 +579,7 @@ class DAAPTrack:
           data = r.read(32 * 1024)
         mp3.close()
         r.close()
-        print "Done"
+        log.debug("Done")
 
 
 if __name__ == '__main__':
@@ -598,6 +592,9 @@ if __name__ == '__main__':
     try: port = sys.argv[2]
     except IndexError: port = 3689
 
+    logging.basicConfig(level=logging.DEBUG,
+            format='%(asctime)s %(levelname)s %(message)s')
+
     try:
         # do everything in a big try, so we can disconnect at the end
         
@@ -607,7 +604,7 @@ if __name__ == '__main__':
         session     = connection.login()
 
         library = session.library()
-        print "Library name is '%s'"%repr(library.name)
+        log.debug("Library name is '%s'", repr(library.name))
 
         tracks = library.tracks()
 

@@ -183,8 +183,14 @@ class ItShell(Cmd):
 
 
 
-# run the shell
-shell = ItShell()
-#shell.do_connect("")
-shell.cmdloop()
- 
+try:
+    import logging
+    logging.basicConfig(level=logging.DEBUG,
+            format='%(asctime)s %(levelname)s %(message)s')
+    # run the shell
+    shell = ItShell()
+    #shell.do_connect("")
+    shell.cmdloop()
+finally:
+    if shell and shell.session:
+        shell.session.logout()
