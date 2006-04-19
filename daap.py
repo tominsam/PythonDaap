@@ -103,7 +103,8 @@ dmapCodeTypes = {
     'mcnm':('dmap.contentcodesnumber', 's'),
     'mcna':('dmap.contentcodesname', 's'),
     'mcty':('dmap.contentcodestype', 'uh'),
-        }
+}
+
 dmapDataTypes = {
     # these are the data types
     1:'b',  # byte
@@ -414,6 +415,7 @@ class DAAPClient:
             compressedstream = StringIO( content )
             gunzipper = gzip.GzipFile(fileobj=compressedstream)
             content = gunzipper.read()
+            gunzipper.close()
             print "DEBUG: expanded from %s bytes to %s bytes"%(old_len, len(content))
         # close this, we're done with it
         response.close()
@@ -438,6 +440,7 @@ class DAAPClient:
         str = StringIO(data)
         object  = DAAPObject()
         object.processData(str)
+        str.close()
         return object
 
 
@@ -512,7 +515,7 @@ class DAAPDatabase:
     def tracks(self):
         """returns all the tracks in this database, as DAAPTrack objects"""
         response = self.session.request("/databases/%s/items"%self.id, {
-            'meta':"dmap.itemid,dmap.itemname,dmap.persistentid,daap.songalbum,daap.songartist,daap.songformat,daap.songsize,daap.songbitrate,daap.songsamplerate,daap.songstarttime,daap.songstoptime,daap.songtime"
+            'meta':"dmap.itemid,dmap.itemname,dmap.persistentid,daap.songalbum,daap.songartist,daap.songformat,daap.songsize,daap.songtime"
         })
         track_list = response.getAtom("mlcl").contains
         return map( lambda t: DAAPTrack(self, t), track_list )
