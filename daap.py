@@ -416,6 +416,7 @@ class DAAPClient:
             gunzipper = gzip.GzipFile(fileobj=compressedstream)
             content = gunzipper.read()
             gunzipper.close()
+            compressedstream.close()
             print "DEBUG: expanded from %s bytes to %s bytes"%(old_len, len(content))
         # close this, we're done with it
         response.close()
@@ -515,7 +516,8 @@ class DAAPDatabase:
     def tracks(self):
         """returns all the tracks in this database, as DAAPTrack objects"""
         response = self.session.request("/databases/%s/items"%self.id, {
-            'meta':"dmap.itemid,dmap.itemname,dmap.persistentid,daap.songalbum,daap.songartist,daap.songformat,daap.songsize,daap.songtime"
+            'meta':"dmap.itemid,dmap.itemname,daap.songalbum," +
+                   "daap.songartist,daap.songformat,daap.songtime"
         })
         track_list = response.getAtom("mlcl").contains
         return map( lambda t: DAAPTrack(self, t), track_list )
@@ -537,7 +539,8 @@ class DAAPPlaylist:
     def tracks(self):
         """returns all the tracks in this playlist, as DAAPTrack objects"""
         response = self.database.session.request("/databases/%s/containers/%s/items"%(self.database.id,self.id), {
-            'meta':"dmap.itemid,dmap.itemname,dmap.persistentid,daap.songalbum,daap.songartist,daap.songformat,daap.songsize,daap.songbitrate,daap.songsamplerate,daap.songstarttime,daap.songstoptime,daap.songtime"
+            'meta':"dmap.itemid,dmap.itemname,daap.songalbum,daap.songartist,"+
+                   "daap.songformat,daap.songtime"
         })
         track_list = response.getAtom("mlcl").contains
         return map( lambda t: DAAPTrack(self.database, t), track_list )
@@ -546,7 +549,6 @@ class DAAPPlaylist:
 class DAAPTrack:
 
     def __init__(self, database, atom):
-        self.atom = atom
         self.database = database
         self.name = atom.getAtom("minm")
         self.artist = atom.getAtom("asar")
@@ -554,8 +556,7 @@ class DAAPTrack:
         self.id = atom.getAtom("miid")
         self.type = atom.getAtom("asfm")
         self.time = atom.getAtom("astm")
-        self.size = 0
-        #atom.printTree()
+        #self.size = atom.getAtom("astz")
 
     def request(self):
         """returns a 'response' object for the track's mp3 data.
