@@ -174,12 +174,6 @@ class DAAPError(Exception): pass
 
 class DAAPObject(object):
 
-    def __init__(self):
-        self.code   = None
-        self.length = None
-        self.value  = None
-        self.contains   = []
-
     def getAtom(self, code):
         """returns an atom of the given code by searching 'contains' recursively."""
         if self.code == code:
@@ -188,9 +182,10 @@ class DAAPObject(object):
             return self.value
 
         # ok, it's not us. check our children
-        for object in self.contains:
-            value = object.getAtom(code)
-            if value: return value
+        if hasattr(self, 'contains'):
+            for object in self.contains:
+                value = object.getAtom(code)
+                if value: return value
         return None
 
         
@@ -207,9 +202,13 @@ class DAAPObject(object):
             return dmapCodeTypes[self.code][1]
 
     def printTree(self, level = 0, out = sys.stdout):
-        out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.objectType(), str(self.value)))
-        for object in self.contains:
-            object.printTree(level + 1)
+        if hasattr(self, 'value'):
+            out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.objectType(), self.value))
+        else:
+            out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.objectType(), None))
+        if hasattr(self, 'contains'):
+            for object in self.contains:
+                object.printTree(level + 1)
 
     def encode(self):
         # generate DMAP tagged data format
@@ -291,6 +290,7 @@ class DAAPObject(object):
         start_pos = str.tell()
 
         if type == 'c':
+            self.contains = []
             # the object is a container, we need to pass it
             # it's length amount of data for processessing
             while str.tell() < start_pos + self.length:
