@@ -268,14 +268,8 @@ class DAAPObject(object):
             return data
         
     def processData(self, str):
-
-        # first we need 4 bytes for the code
-        self.code   = str.read(4)
-
-        # now we need the length of the objects data
-        # this is another 4 bytes
-        code = str.read(4)
-        self.length = struct.unpack('!I', code)[0]
+        # read 4 bytes for the code and 4 bytes for the length of the objects data
+        self.code, self.length = struct.unpack('!4sI', str.read(8))
 
         # now we need to find out what type of object it is
         if self.code == None or not dmapCodeTypes.has_key(self.code):
