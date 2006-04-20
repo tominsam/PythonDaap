@@ -177,7 +177,7 @@ class DAAPObject(object):
     def getAtom(self, code):
         """returns an atom of the given code by searching 'contains' recursively."""
         if self.code == code:
-            if self.objectType() == 'c':
+            if self.type == 'c':
                 return self
             return self.value
 
@@ -187,8 +187,7 @@ class DAAPObject(object):
                 value = object.getAtom(code)
                 if value: return value
         return None
-
-        
+ 
     def codeName(self):
         if self.code == None or not dmapCodeTypes.has_key(self.code):
             return None
@@ -203,9 +202,9 @@ class DAAPObject(object):
 
     def printTree(self, level = 0, out = sys.stdout):
         if hasattr(self, 'value'):
-            out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.objectType(), self.value))
+            out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.type, self.value))
         else:
-            out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.objectType(), None))
+            out.write('\t' * level + '%s (%s)\t%s\t%s\n' % (self.codeName(), self.code, self.type, None))
         if hasattr(self, 'contains'):
             for object in self.contains:
                 object.printTree(level + 1)
@@ -213,8 +212,7 @@ class DAAPObject(object):
     def encode(self):
         # generate DMAP tagged data format
         # step 1 - find out what type of object we are
-        type    = self.objectType()
-        if type == 'c':
+        if self.type == 'c':
             # our object is a container,
             # this means we're going to have to
             # check contains[]
@@ -228,7 +226,7 @@ class DAAPObject(object):
             data    = struct.pack('!4sI%ss' % length, self.code, length, value)
             return data
             
-        elif type == 'v':
+        elif self.type == 'v':
             # packing a version tag is about 1 point different to everything
             # below, but it means it won't fit into our abstract packing
             value   = self.value.split('.')
@@ -240,25 +238,25 @@ class DAAPObject(object):
             # to calculate the length and such
             # we want to encode the contents of
             # value for our value
-            if type == 'l':
+            if self.type == 'l':
                 packing = 'q'
-            elif type == 'ul':
+            elif self.type == 'ul':
                 packing = 'Q'
-            elif type == 'i':
+            elif self.type == 'i':
                 packing = 'i'
-            elif type == 'ui':
+            elif self.type == 'ui':
                 packing = 'I'
-            elif type == 'h':
+            elif self.type == 'h':
                 packing = 'h'
-            elif type == 'uh':
+            elif self.type == 'uh':
                 packing = 'H'
-            elif type == 'b':
+            elif self.type == 'b':
                 packing = 'b'
-            elif type == 'ub':
+            elif self.type == 'ub':
                 packing = 'B'
-            elif type == 't':
+            elif self.type == 't':
                 packing = 'I'
-            elif type == 's':
+            elif self.type == 's':
                 packing = '%ss' % len(self.value)
             else:
                 raise DAAPError('DAAPObject: encode: unknown code %s' % self.code)
@@ -280,8 +278,11 @@ class DAAPObject(object):
         self.length = struct.unpack('!I', code)[0]
 
         # now we need to find out what type of object it is
-        type        = self.objectType()
-        
+        if self.code == None or not dmapCodeTypes.has_key(self.code):
+            self.type = None
+        else:
+            self.type = dmapCodeTypes[self.code][1]
+
         # TODO - I don't like this read() here. Ideally, we'd only ever
         # have one StringIO object floating around, passing it to our
         # children, who would keep eating off the front of it, until
@@ -289,7 +290,7 @@ class DAAPObject(object):
         # copy must be slowing us down...
         start_pos = str.tell()
 
-        if type == 'c':
+        if self.type == 'c':
             self.contains = []
             # the object is a container, we need to pass it
             # it's length amount of data for processessing
@@ -304,37 +305,37 @@ class DAAPObject(object):
         # not a container, we're a single atom. Read it.
         code = str.read(self.length)
 
-        if type == 'l':
+        if self.type == 'l':
             # the object is a long long number,
             self.value  = struct.unpack('!q', code)[0]
-        elif type == 'ul':
+        elif self.type == 'ul':
             # the object is an unsigned long long
             self.value  = struct.unpack('!Q', code)[0]
-        elif type == 'i':
+        elif self.type == 'i':
             # the object is a number,
             self.value  = struct.unpack('!i', code)[0]
-        elif type == 'ui':
+        elif self.type == 'ui':
             # unsigned integer
             self.value  = struct.unpack('!I', code)[0]
-        elif type == 'h':
+        elif self.type == 'h':
             # this is a short number,
             self.value  = struct.unpack('!h', code)[0]
-        elif type == 'uh':
+        elif self.type == 'uh':
             # unsigned short
             self.value  = struct.unpack('!H', code)[0]
-        elif type == 'b':
+        elif self.type == 'b':
             # this is a byte long number
             self.value  = struct.unpack('!b', code)[0]
-        elif type == 'ub':
+        elif self.type == 'ub':
             # unsigned byte
             self.value  = struct.unpack('!B', code)[0]
-        elif type == 'v':
+        elif self.type == 'v':
             # this is a version tag
             self.value  = float("%s.%s" % struct.unpack('!HH', code))
-        elif type == 't':
+        elif self.type == 't':
             # this is a time string
             self.value  = struct.unpack('!I', code)[0]
-        elif type == 's':
+        elif self.type == 's':
             # the object is a string
             # we need to read length characters from the string
             try:
@@ -349,7 +350,6 @@ class DAAPObject(object):
             # put it's raw data into value
             log.debug('DAAPObject: Unknown code %s for type %s, writing raw data', code, self.code)
             self.value  = code
-
 
 class DAAPClient(object):
     def __init__(self):
@@ -442,7 +442,6 @@ class DAAPClient(object):
         object  = DAAPObject()
         object.processData(str)
         return object
-
 
     def getContentCodes(self):
         # make the request for the content codes
