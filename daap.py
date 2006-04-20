@@ -173,6 +173,7 @@ def DAAPParseCodeTypes(treeroot):
 class DAAPError(Exception): pass
 
 class DAAPObject(object):
+
     def __init__(self):
         self.code   = None
         self.length = None
@@ -417,7 +418,7 @@ class DAAPClient(object):
             compressedstream = StringIO( content )
             gunzipper = gzip.GzipFile(fileobj=compressedstream)
             content = gunzipper.read()
-            log.debug("expanded from %s bytes to %s bytes"%(old_len, len(content)) )
+            log.debug("expanded from %s bytes to %s bytes", old_len, len(content))
         # close this, we're done with it
         response.close()
         
@@ -466,7 +467,7 @@ class DAAPClient(object):
         if sessionid == None:
             log.debug('DAAPClient: login unable to determine session ID')
             return
-        log.debug("DEBUG: Logged in as session %s", sessionid)
+        log.debug("Logged in as session %s", sessionid)
         return DAAPSession(self, sessionid)
 
 
@@ -490,7 +491,7 @@ class DAAPSession(object):
     def databases(self):
         response = self.request("/databases")
         db_list = response.getAtom("mlcl").contains
-        return map( lambda d: DAAPDatabase(self, d), db_list )
+        return [DAAPDatabase(self, d) for d in db_list]
         
     def library(self):
         # there's only ever one db, and it's always the library...
@@ -498,7 +499,8 @@ class DAAPSession(object):
 
     def logout(self):
         response = self.request("/logout")
-        log.debug('DEBUG: DAAPSession: expired session id %s', self.sessionid)
+        log.debug('DAAPSession: expired session id %s', self.sessionid)
+
         
 class DAAPDatabase(object):
 
@@ -514,12 +516,12 @@ class DAAPDatabase(object):
                    "daap.songartist,daap.songformat,daap.songtime"
         })
         track_list = response.getAtom("mlcl").contains
-        return map( lambda t: DAAPTrack(self, t), track_list )
+        return [DAAPTrack(self, t) for t in track_list]
 
     def playlists(self):
         response = self.session.request("/databases/%s/containers"%self.id)
         db_list = response.getAtom("mlcl").contains
-        return map( lambda d: DAAPPlaylist(self, d), db_list )
+        return [DAAPPlaylist(self, d) for d in db_list]
 
 
 class DAAPPlaylist(object):
@@ -537,20 +539,29 @@ class DAAPPlaylist(object):
                    "daap.songformat,daap.songtime"
         })
         track_list = response.getAtom("mlcl").contains
-        return map( lambda t: DAAPTrack(self.database, t), track_list )
+        return [DAAPTrack(self.database, t) for t in track_list]
 
 
 class DAAPTrack(object):
 
+    attrmap = {'name':'minm',
+        'artist':'asar',
+        'album':'asal',
+        'id':'miid',
+        'type':'asfm',
+        'time':'astm',
+        'size':'astz'}
+
     def __init__(self, database, atom):
         self.database = database
-        self.name = atom.getAtom("minm")
-        self.artist = atom.getAtom("asar")
-        self.album = atom.getAtom("asal")
-        self.id = atom.getAtom("miid")
-        self.type = atom.getAtom("asfm")
-        self.time = atom.getAtom("astm")
-        #self.size = atom.getAtom("astz")
+        self.atom = atom
+
+    def __getattr__(self, name):
+        if self.__dict__.has_key(name):
+            return self.__dict__[name]
+        elif DAAPTrack.attrmap.has_key(name):
+            return self.atom.getAtom(DAAPTrack.attrmap[name])
+        raise AttributeError, name
 
     def request(self):
         """returns a 'response' object for the track's mp3 data.
@@ -583,42 +594,88 @@ class DAAPTrack(object):
 
 
 if __name__ == '__main__':
-    connection  = DAAPClient()
+    def main():
+        connection  = DAAPClient()
 
-    # I'm new to this python thing. There's got to be a better idiom
-    # for this.
-    try: host = sys.argv[1]
-    except IndexError: host = "localhost"
-    try: port = sys.argv[2]
-    except IndexError: port = 3689
+        # I'm new to this python thing. There's got to be a better idiom
+        # for this.
+        try: host = sys.argv[1]
+        except IndexError: host = "localhost"
+        try: port = sys.argv[2]
+        except IndexError: port = 3689
 
-    logging.basicConfig(level=logging.DEBUG,
-            format='%(asctime)s %(levelname)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG,
+                format='%(asctime)s %(levelname)s %(message)s')
 
-    try:
-        # do everything in a big try, so we can disconnect at the end
-        
-        connection.connect( host, port )
-
-        # auth isn't supported yet. Just log in
-        session     = connection.login()
-
-        library = session.library()
-        log.debug("Library name is '%s'", repr(library.name))
-
-        tracks = library.tracks()
-
-        # demo - save the first track to disk
-        #print("Saving %s by %s to disk as 'track.mp3'"%(tracks[0].name, tracks[0].artist))
-        #tracks[0].save("track.mp3")
-
-        tracks[0].atom.printTree()
-
-
-    finally:
-        # this here, so we logout even if there's an error somewhere,
-        # or itunes will eventually refuse more connections.
-        print "--------------"
         try:
-            session.logout()
-        except Exception: pass
+            # do everything in a big try, so we can disconnect at the end
+            
+            connection.connect( host, port )
+
+            # auth isn't supported yet. Just log in
+            session     = connection.login()
+
+            library = session.library()
+            log.debug("Library name is '%s'", repr(library.name))
+
+            tracks = library.tracks()
+
+            # demo - save the first track to disk
+            #print("Saving %s by %s to disk as 'track.mp3'"%(tracks[0].name, tracks[0].artist))
+            #tracks[0].save("track.mp3")
+
+            tracks[0].atom.printTree()
+
+
+        finally:
+            # this here, so we logout even if there's an error somewhere,
+            # or itunes will eventually refuse more connections.
+            print "--------------"
+            try:
+                session.logout()
+            except Exception: pass
+
+    def main_profile():
+        import hotshot
+
+        prof = hotshot.Profile('daap.prof')
+        connection  = DAAPClient()
+
+        # I'm new to this python thing. There's got to be a better idiom
+        # for this.
+        try: host = sys.argv[1]
+        except IndexError: host = "localhost"
+        try: port = sys.argv[2]
+        except IndexError: port = 3689
+
+        try:
+            # do everything in a big try, so we can disconnect at the end
+            
+            connection.connect( host, port )
+
+            # auth isn't supported yet. Just log in
+            session     = connection.login()
+
+            prof.start()
+
+            library = session.library()
+            tracks = library.tracks()
+
+        finally:
+            # this here, so we logout even if there's an error somewhere,
+            # or itunes will eventually refuse more connections.
+            try:
+                session.logout()
+            except Exception: pass
+
+            # save profiling data
+            prof.stop()
+            prof.close()
+
+        # load profile data and print out stats
+        import hotshot.stats
+        stats = hotshot.stats.load("daap.prof")
+        stats.print_stats()
+
+    #main()
+    main_profile()
