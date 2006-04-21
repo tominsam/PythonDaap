@@ -12,6 +12,7 @@ import httplib, struct, sys
 import md5, md5daap
 import gzip
 import logging
+from urllib import urlencode
 from cStringIO import StringIO
 
 __all__ = ['DAAPError', 'DAAPObject', 'DAAPClient', 'DAAPSession', 'DAAPDatabase', 'DAAPPlaylist', 'DAAPTrack']
@@ -362,14 +363,8 @@ class DAAPClient(object):
     def _get_response(self, r, params = {}, gzip = 1):
         """Makes a request, doing the right thing, returns the raw data"""
 
-        # this 'first' thing is a nasty hack. There should be a better python
-        # idiom for it. I'd use map in perl.
-        first = 1
-        for key in params:
-            if first: r += "?"
-            else: r += "&"
-            first = 0
-            r += "%s=%s"%(key, params[key])
+        if params:
+            r = '%s?%s' % (r, urlencode(params))
 
         log.debug('getting %s', r)
 
