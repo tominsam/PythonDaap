@@ -186,7 +186,7 @@ class DAAPObject(object):
                 value = object.getAtom(code)
                 if value: return value
         return None
- 
+
     def codeName(self):
         if self.code == None or not dmapCodeTypes.has_key(self.code):
             return None
@@ -224,7 +224,7 @@ class DAAPObject(object):
             # pack: 4 byte code, 4 byte length, length bytes of value
             data    = struct.pack('!4sI%ss' % length, self.code, length, value)
             return data
-            
+
         elif self.type == 'v':
             # packing a version tag is about 1 point different to everything
             # below, but it means it won't fit into our abstract packing
@@ -265,7 +265,7 @@ class DAAPObject(object):
             # pack: 4 characters for the code, 4 bytes for the length, and 'length' bytes for the value
             data    = struct.pack('!4sI%s' % packing, self.code, length, self.value)
             return data
-        
+
     def processData(self, str):
         # read 4 bytes for the code and 4 bytes for the length of the objects data
         self.code, self.length = struct.unpack('!4sI', str.read(8))
@@ -395,7 +395,7 @@ class DAAPClient(object):
 
         response    = self.socket.getresponse()
         return response;
-        
+
     def request(self, r, params = {}, answers = 1):
         """Make a request to the DAAP server, with the passed params. This
         deals with all the cikiness like validation hashes, etc, etc"""
@@ -414,7 +414,7 @@ class DAAPClient(object):
             log.debug("expanded from %s bytes to %s bytes", old_len, len(content))
         # close this, we're done with it
         response.close()
-        
+
         if status == 401:
             raise DAAPError('DAAPClient: %s: auth required'%r)
         elif status == 403:
@@ -444,7 +444,7 @@ class DAAPClient(object):
 
     def getInfo(self):
         response = self.request('/server-info')
-        
+
         # detect the 'old' iTunes 4.2 servers, and set a flag, so we use
         # the real MD5 hash algo to verify requests.
         version = response.getAtom("apro")
@@ -484,7 +484,7 @@ class DAAPSession(object):
         response = self.request("/databases")
         db_list = response.getAtom("mlcl").contains
         return [DAAPDatabase(self, d) for d in db_list]
-        
+
     def library(self):
         # there's only ever one db, and it's always the library...
         return self.databases()[0]
@@ -493,7 +493,7 @@ class DAAPSession(object):
         response = self.request("/logout")
         log.debug('DAAPSession: expired session id %s', self.sessionid)
 
-        
+
 class DAAPDatabase(object):
 
     def __init__(self, session, atom):
@@ -601,7 +601,7 @@ if __name__ == '__main__':
 
         try:
             # do everything in a big try, so we can disconnect at the end
-            
+
             connection.connect( host, port )
 
             # auth isn't supported yet. Just log in
