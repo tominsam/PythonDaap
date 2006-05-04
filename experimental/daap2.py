@@ -13,6 +13,7 @@ import md5, md5daap
 import gzip
 import logging
 from urllib import urlencode
+from cStringIO import StringIO
 
 __all__ = ['DAAPError', 'DAAPObject', 'DAAPClient', 'DAAPSession', 'DAAPDatabase', 'DAAPPlaylist', 'DAAPTrack']
 
