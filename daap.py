@@ -364,7 +364,9 @@ class DAAPClient(object):
         """Makes a request, doing the right thing, returns the raw data"""
 
         if params:
-            r = '%s?%s' % (r, urlencode(params))
+            r = "%s?"%r
+            for p in params:
+                r = "%s&%s=%s"%( r, p, params[p] )
 
         log.debug('getting %s', r)
 
@@ -502,6 +504,7 @@ class DAAPDatabase(object):
             'meta':"dmap.itemid,dmap.itemname,daap.songalbum," +
                    "daap.songartist,daap.songformat,daap.songtime"
         })
+        #response.printTree()
         track_list = response.getAtom("mlcl").contains
         return [DAAPTrack(self, t) for t in track_list]
 
