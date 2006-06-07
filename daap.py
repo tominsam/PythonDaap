@@ -12,7 +12,6 @@ import httplib, struct, sys
 import md5, md5daap
 import gzip
 import logging
-from urllib import urlencode
 from cStringIO import StringIO
 
 __all__ = ['DAAPError', 'DAAPObject', 'DAAPClient', 'DAAPSession', 'DAAPDatabase', 'DAAPPlaylist', 'DAAPTrack']
@@ -364,9 +363,8 @@ class DAAPClient(object):
         """Makes a request, doing the right thing, returns the raw data"""
 
         if params:
-            r = "%s?"%r
-            for p in params:
-                r = "%s&%s=%s"%( r, p, params[p] )
+            l = ['%s=%s' % (k, v) for k, v in params.iteritems()]
+            r = '%s?%s' % (r, '&'.join(l))
 
         log.debug('getting %s', r)
 
