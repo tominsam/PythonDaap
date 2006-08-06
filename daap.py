@@ -386,6 +386,9 @@ class DAAPClient(object):
         else:
             headers[ 'Client-DAAP-Validation' ] = hash_v3(r, 2, self.request_id)
 
+	
+        self.socket.close()
+        self.socket.connect()
         self.socket.request('GET', r, None, headers)
 
         response    = self.socket.getresponse()
