@@ -387,8 +387,12 @@ class DAAPClient(object):
             headers[ 'Client-DAAP-Validation' ] = hash_v3(r, 2, self.request_id)
 
 	
+	# there are servers that don't allow >1 download from a single HTTP
+	# session, or something. Reset the connection each time. Thanks to
+	# Fernando Herrera for this one.
         self.socket.close()
         self.socket.connect()
+
         self.socket.request('GET', r, None, headers)
 
         response    = self.socket.getresponse()
