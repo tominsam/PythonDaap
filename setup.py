@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 
 setup (
   name = "PythonDaap",
-  version = "1.0",
+  version = "0.4",
   author = "Tom Insam",
   author_email = "tom@jerakeen.org",
   url = "http://jerakeen.org/trac/wiki/PythonDaap",
