@@ -1,3 +1,11 @@
+2006-10-11	Tom Insam <tom@jerakeen.org>
+
+  * At the request of philippe.normand@gmail.com, explicitly licensed
+    the code under the LGPL.
+  
+  * Accepted a patch from Peter Stanford <Peter.Sanford@wheaton.edu> to
+    properly return the sizes of remote files.
+  
 2006-08-06	Tom Insam <tom@jerakeen.org>
 
   * I create a changelog file.
