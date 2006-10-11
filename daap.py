@@ -507,7 +507,7 @@ class DAAPDatabase(object):
         """returns all the tracks in this database, as DAAPTrack objects"""
         response = self.session.request("/databases/%s/items"%self.id, {
             'meta':"dmap.itemid,dmap.itemname,daap.songalbum," +
-                   "daap.songartist,daap.songformat,daap.songtime"
+                   "daap.songartist,daap.songformat,daap.songtime,daap.songsize"
         })
         #response.printTree()
         track_list = response.getAtom("mlcl").contains
@@ -531,7 +531,7 @@ class DAAPPlaylist(object):
         """returns all the tracks in this playlist, as DAAPTrack objects"""
         response = self.database.session.request("/databases/%s/containers/%s/items"%(self.database.id,self.id), {
             'meta':"dmap.itemid,dmap.itemname,daap.songalbum,daap.songartist,"+
-                   "daap.songformat,daap.songtime"
+                   "daap.songformat,daap.songtime,daap.songsize"
         })
         track_list = response.getAtom("mlcl").contains
         return [DAAPTrack(self.database, t) for t in track_list]
@@ -545,7 +545,7 @@ class DAAPTrack(object):
         'id':'miid',
         'type':'asfm',
         'time':'astm',
-        'size':'astz'}
+        'size':'assz'}
 
     def __init__(self, database, atom):
         self.database = database
