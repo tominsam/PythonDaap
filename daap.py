@@ -105,7 +105,15 @@ dmapCodeTypes = {
     'mcnm':('dmap.contentcodesnumber', 's'),
     'mcna':('dmap.contentcodesname', 's'),
     'mcty':('dmap.contentcodestype', 'uh'),
-        }
+
+    # stupid, stupid. The reflection just isn't good enough
+    # to connect to an iPhoto server.
+    'ppro':('dpap.protocolversion', 'i'),
+    'avdb':('daap.serverdatabases', 'c'),
+    'adbs':('daap.databasesongs', 'c'),
+    'pret':('dpap.unknown', 'c'),
+}
+
 dmapDataTypes = {
     # these are the data types
     1:'b',  # byte
@@ -120,7 +128,7 @@ dmapDataTypes = {
     10:'t', # timestamp
     11:'v', # version
     12:'c', # container
-        }
+}
 
 dmapFudgeDataTypes = {
   'dmap.authenticationschemes':'1'
@@ -164,7 +172,7 @@ def DAAPParseCodeTypes(treeroot):
                 try:
                     dtype = dmapFudgeDataTypes[name]
                 except: pass
-
+                print("** %s %s %s", code, name, dtype)
                 dmapCodeTypes[code] = (name, dtype)
         else:
             raise DAAPError('DAAPParseCodeTypes: unexpected code %s at level 1' % info.codeName())
@@ -268,7 +276,10 @@ class DAAPObject(object):
 
     def processData(self, str):
         # read 4 bytes for the code and 4 bytes for the length of the objects data
-        self.code, self.length = struct.unpack('!4sI', str.read(8))
+        data = str.read(8)
+        print("'%s'"%data)
+        if not data: return
+        self.code, self.length = struct.unpack('!4sI', data)
 
         # now we need to find out what type of object it is
         if self.code == None or not dmapCodeTypes.has_key(self.code):
@@ -276,17 +287,13 @@ class DAAPObject(object):
         else:
             self.type = dmapCodeTypes[self.code][1]
 
-        # TODO - I don't like this read() here. Ideally, we'd only ever
-        # have one StringIO object floating around, passing it to our
-        # children, who would keep eating off the front of it, until
-        # eventually we hit the end, at which point we'd be done. This
-        # copy must be slowing us down...
         start_pos = str.tell()
 
         if self.type == 'c':
             self.contains = []
             # the object is a container, we need to pass it
             # it's length amount of data for processessing
+            eof = 0
             while str.tell() < start_pos + self.length:
                 object  = DAAPObject()
                 self.contains.append(object)
@@ -449,7 +456,7 @@ class DAAPClient(object):
 
         # detect the 'old' iTunes 4.2 servers, and set a flag, so we use
         # the real MD5 hash algo to verify requests.
-        version = response.getAtom("apro")
+        version = response.getAtom("apro") or response.getAtom("ppro")
         if int(version) == 2:
             self._old_itunes = 1
 
