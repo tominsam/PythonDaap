@@ -503,6 +503,11 @@ class DAAPSession(object):
         log.debug('DAAPSession: expired session id %s', self.sessionid)
 
 
+# the atoms we want. Making this list smaller reduces memory footprint,
+# and speeds up reading large libraries. It also reduces the metainformation
+# available to the client.
+daap_atoms = "dmap.itemid,dmap.itemname,daap.songalbum,daap.songartist,daap.songformat,daap.songtime,daap.songsize,daap.songgenre,daap.songyear,daap.songtracknumber"
+
 class DAAPDatabase(object):
 
     def __init__(self, session, atom):
@@ -513,8 +518,7 @@ class DAAPDatabase(object):
     def tracks(self):
         """returns all the tracks in this database, as DAAPTrack objects"""
         response = self.session.request("/databases/%s/items"%self.id, {
-            'meta':"dmap.itemid,dmap.itemname,daap.songalbum," +
-                   "daap.songartist,daap.songformat,daap.songtime,daap.songsize"
+            'meta':daap_atoms
         })
         #response.printTree()
         track_list = response.getAtom("mlcl").contains
@@ -537,8 +541,7 @@ class DAAPPlaylist(object):
     def tracks(self):
         """returns all the tracks in this playlist, as DAAPTrack objects"""
         response = self.database.session.request("/databases/%s/containers/%s/items"%(self.database.id,self.id), {
-            'meta':"dmap.itemid,dmap.itemname,daap.songalbum,daap.songartist,"+
-                   "daap.songformat,daap.songtime,daap.songsize"
+            'meta':daap_atoms
         })
         track_list = response.getAtom("mlcl").contains
         return [DAAPTrack(self.database, t) for t in track_list]
