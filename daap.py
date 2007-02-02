@@ -172,7 +172,7 @@ def DAAPParseCodeTypes(treeroot):
                 try:
                     dtype = dmapFudgeDataTypes[name]
                 except: pass
-                print("** %s %s %s", code, name, dtype)
+                #print("** %s %s %s", code, name, dtype)
                 dmapCodeTypes[code] = (name, dtype)
         else:
             raise DAAPError('DAAPParseCodeTypes: unexpected code %s at level 1' % info.codeName())
@@ -277,7 +277,7 @@ class DAAPObject(object):
     def processData(self, str):
         # read 4 bytes for the code and 4 bytes for the length of the objects data
         data = str.read(8)
-        print("'%s'"%data)
+        #print("'%s'"%data)
         if not data: return
         self.code, self.length = struct.unpack('!4sI', data)
 
