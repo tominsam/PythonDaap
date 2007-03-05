@@ -1,3 +1,7 @@
+2007-03-05 - 0.6
+
+  * Added 'password' param to the connect call, code by Aren Olson
+
 2007-01-30	Tom Insam <tom@jerakeen.org>
 
   * Added daap.songgenre, daap.songyear, and daap.songtracknumber to the

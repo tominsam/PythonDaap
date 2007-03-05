@@ -357,11 +357,12 @@ class DAAPClient(object):
         self.request_id = 0
         self._old_itunes = 0
 
-    def connect(self, hostname, port = 3689):
+    def connect(self, hostname, port = 3689, pasword = None):
         if self.socket != None:
             raise DAAPError("DAAPClient: already connected.")
         self.hostname = hostname
         self.port     = port
+        self.password = password
         self.socket = httplib.HTTPConnection(hostname, port)
         self.getContentCodes() # practically required
         self.getInfo() # to determine the remote server version
@@ -381,6 +382,11 @@ class DAAPClient(object):
         }
 
         if gzip: headers['Accept-encoding'] = 'gzip'
+        
+        if self.password:
+            import base64
+            b64 = base64.encodestring( '%s:%s'%('user', self.password) )[:-1]
+            headers['Authorization'] = 'Basic %s' % b64             
 
         # TODO - we should allow for different versions of itunes - there
         # are a few different hashing algos we could be using. I need some
