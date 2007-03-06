@@ -357,7 +357,7 @@ class DAAPClient(object):
         self.request_id = 0
         self._old_itunes = 0
 
-    def connect(self, hostname, port = 3689, pasword = None):
+    def connect(self, hostname, port = 3689, password = None):
         if self.socket != None:
             raise DAAPError("DAAPClient: already connected.")
         self.hostname = hostname
