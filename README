@@ -5,7 +5,8 @@ object model that can download individual tracks, and has playlist
 support. I have a command-line shell similar to itshell (I also called
 mine itshell, just to be confusing), and it's all quite usable.
 
-Development copies of the code can be found in [my subversion repository][4].
+Development copies of the code can be found in [my subversion repository][4],
+or the [project page for PythonDaap][7].
 
 This distribution also includes an implementation of Apple's custom MD5
 hasher as a python module. This hasher is used in the 
@@ -49,3 +50,4 @@ the conversion work for me.
 [4]: http://jerakeen.org/svn/tomi/Projects/python-daap
 [5]: http://crazney.net/programs/itunes/authentication.html
 [6]: http://search-dev.develooper.com/src/BILLH/Digest-MD5-M4p-0.01/M4p.xs
+[7]: http://jerakeen.org/code/pythondaap
