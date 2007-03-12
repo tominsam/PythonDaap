@@ -8,6 +8,6 @@ setup (
   url = "http://jerakeen.org/code/pythondaap",
   description = "a python daap client library",
   py_modules = ['daap'],
-  ext_modules = [Extension('md5daap',sources=['md5module.c', 'md5c.c'])],
+  ext_modules = [Extension('md5daap',sources=['md5module.c', 'md5.c'])],
   license = "LGPL",
 )

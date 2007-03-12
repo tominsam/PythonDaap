@@ -1,62 +1,54 @@
-/* MD5.H - header file for MD5C.C
- */
+#ifndef MD5_H
+#define MD5_H
 
-/* Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All
-rights reserved.
+/*  The following tests optimise behaviour on little-endian
+    machines, where there is no need to reverse the byte order
+    of 32 bit words in the MD5 computation.  By default,
+    HIGHFIRST is defined, which indicates we're running on a
+    big-endian (most significant byte first) machine, on which
+    the byteReverse function in md5.c must be invoked. However,
+    byteReverse is coded in such a way that it is an identity
+    function when run on a little-endian machine, so calling it
+    on such a platform causes no harm apart from wasting time. 
+    If the platform is known to be little-endian, we speed
+    things up by undefining HIGHFIRST, which defines
+    byteReverse as a null macro.  Doing things in this manner
+    insures we work on new platforms regardless of their byte
+    order.  */
 
-License to copy and use this software is granted provided that it
-is identified as the "RSA Data Security, Inc. MD5 Message-Digest
-Algorithm" in all material mentioning or referencing this software
-or this function.
+#define HIGHFIRST
 
-License is also granted to make and use derivative works provided
-that such works are identified as "derived from the RSA Data
-Security, Inc. MD5 Message-Digest Algorithm" in all material
-mentioning or referencing the derived work.
-
-RSA Data Security, Inc. makes no representations concerning either
-the merchantability of this software or the suitability of this
-software for any particular purpose. It is provided "as is"
-without express or implied warranty of any kind.
-
-These notices must be retained in any copies of any part of this
-documentation and/or software.
- */
-
-/* ========== include global.h ========== */
-/* GLOBAL.H - RSAREF types and constants
- */
-
-/* POINTER defines a generic pointer type */
-typedef unsigned char *POINTER;
-
-/* UINT4 defines a four byte word */
-#if SIZEOF_LONG == 4
-typedef unsigned long int UINT4;
-#elif SIZEOF_SHORT == 4
-typedef unsigned short int UINT4;
-#elif INT_MAX == 2147483647
-typedef unsigned int UINT4;
-#else
-#error "Can't find a 4-byte integral type"
+#ifdef __i386__
+#undef HIGHFIRST
 #endif
 
-/* ========== End global.h; continue md5.h ========== */
+/*  On machines where "long" is 64 bits, we need to declare
+    uint32 as something guaranteed to be 32 bits.  */
 
-/* MD5 context. */
-typedef struct {
-    UINT4 state[4];                                   /* state (ABCD) */
-    UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */
-    unsigned char buffer[64];                         /* input buffer */
-} MD5_CTX;
+#ifdef __alpha
+typedef unsigned int uint32;
+#else
+typedef unsigned long uint32;
+#endif
 
-/* Rename all exported symbols to avoid conflicts with similarly named
-   symbols in some systems' standard C libraries... */
+struct MD5Context {
+        uint32 buf[4];
+        uint32 bits[2];
+        unsigned char in[64];
+};
 
-#define MD5Init _Py_MD5Init
-#define MD5Update _Py_MD5Update
-#define MD5Final _Py_MD5Final
+extern void MD5Init();
+extern void MD5Update();
+extern void MD5Final();
+extern void MD5Transform();
 
-void MD5Init(MD5_CTX *);
-void MD5Update(MD5_CTX *, unsigned char *, unsigned int);
-void MD5Final(unsigned char [16], MD5_CTX *);
+/*
+ * This is needed to make RSAREF happy on some MS-DOS compilers.
+ */
+typedef struct MD5Context MD5_CTX;
+
+/*  Define CHECK_HARDWARE_PROPERTIES to have main,c verify
+    byte order and uint32 settings.  */
+#define CHECK_HARDWARE_PROPERTIES
+
+#endif /* !MD5_H */

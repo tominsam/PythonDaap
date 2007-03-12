@@ -36,13 +36,11 @@ to md5c.c, but that modification was taken in it's entirety from
 'md5daap' in a few places (docs, mostly), that's it.
 
 Thus I owe a debt to all the people who actually _did_ write the code
-I'm using, specifically RSA Data Security - the md5 algorithym I'm using
-is derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm
-- the Python developers for the Python wrapper on top of it, David
-Hammerton for reverse-engineering the modifications needed for iTunes,
-and William Herrera for producing Digest::MD5::M4p, and thus doing all
-the conversion work for me.
-
+I'm using, specifically Colin Plumb, who wrote the public domain MD5
+implementation I'm now using, the Python developers for the Python
+wrapper on top of it, David Hammerton for reverse-engineering the
+modifications needed for iTunes, and William Herrera for producing
+Digest::MD5::M4p, and thus doing all the conversion work for me.
 
 [1]: http://cvs.ucc.asn.au/cgi-bin/viewcvs.cgi/projects/pytunes/
 [2]: http://www.davyd.id.au/
