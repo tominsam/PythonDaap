@@ -1,7 +1,8 @@
 2007-03-05 - 0.6
 
-  * Added 'password' param to the connect call, code by Aren Olson
+  * Added 'password' param to the connect call, code by Aren Olson.
   * License metainformation in the setup.py script, and shipped by manifest.
+  * Updated README to properly include RSA license terms.
 
 2007-01-30	Tom Insam <tom@jerakeen.org>
 
