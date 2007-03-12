@@ -1,2 +1,5 @@
 include md5.h
 include LICENSE
+include MANIFEST.in
+include CHANGELOG
+recursive-include examples *.py
