@@ -1,4 +1,8 @@
-2007-03-05 - 0.6
+development - 0.7
+
+  * Removed RSA MD5 hasher, used Colin Plumb's public domain implementation.
+  
+2007-03-12 - 0.6
 
   * Added 'password' param to the connect call, code by Aren Olson.
   * License metainformation in the setup.py script, and shipped by manifest.
