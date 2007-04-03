@@ -18,18 +18,15 @@
 
 #define HIGHFIRST
 
-#ifdef __i386__
+#if defined __i386__ || defined __x86_64__
 #undef HIGHFIRST
 #endif
 
-/*  On machines where "long" is 64 bits, we need to declare
+/*  Always define uint32 as "int", as "int" is 32 bits everywhere were as
+    on 64 bits machines "long" is 64 bits, we need to declare
     uint32 as something guaranteed to be 32 bits.  */
 
-#ifdef __alpha
 typedef unsigned int uint32;
-#else
-typedef unsigned long uint32;
-#endif
 
 struct MD5Context {
         uint32 buf[4];

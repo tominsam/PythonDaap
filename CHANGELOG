@@ -1,4 +1,9 @@
-development - 0.7
+development - 0.7.1
+
+  * For for 64-bit architectures applied from
+    https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235012
+  
+2007-03-12 - 0.7
 
   * Removed RSA MD5 hasher, used Colin Plumb's public domain implementation.
   
