@@ -147,7 +147,7 @@ class ItShell(Cmd):
             if re.search(other, "%s %s %s"%(t.name, t.artist, t.album), re.IGNORECASE ):
                 found.append( t )
 
-        [ t.atom.printTree() for t in found ]
+        # [ t.atom.printTree() for t in found ]
         print "%s tracks found."%len(found)
         if len(found) > 50: print "displaying 1-50"
         for t in found[:50]:
