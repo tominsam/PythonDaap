@@ -1,6 +1,6 @@
-development - 0.7.1
+2008-03-19 - 0.7.1
 
-  * For for 64-bit architectures applied from
+  * Fix for for 64-bit architectures applied from
     https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235012
   
 2007-03-12 - 0.7
