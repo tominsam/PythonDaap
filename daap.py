@@ -379,6 +379,7 @@ class DAAPClient(object):
         headers = {
             'Client-DAAP-Version': '3.0',
             'Client-DAAP-Access-Index': '2',
+            "User-Agent": "PythonDaap/0.7.2 (http://movieos.org/code/pythondaap/)",
         }
 
         if gzip: headers['Accept-encoding'] = 'gzip'

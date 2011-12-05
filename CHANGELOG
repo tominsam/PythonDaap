@@ -1,3 +1,7 @@
+2011-12-05 - 0.7.2
+
+  * Added user-agent header
+  
 2008-03-19 - 0.7.1
 
   * Fix for for 64-bit architectures applied from
